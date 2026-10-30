@@ -1,0 +1,841 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Learn 3D with the Who's Good AU Box | Who's Good AU</title>
+<meta name="description" content="Learn 3D on the web with three.js: seven short, hands-on lessons with live scenes, all built from the Who's Good AU rounded box.">
+<meta property="og:title" content="Learn 3D with the Who's Good AU Box">
+<meta property="og:description" content="Learn 3D on the web with three.js: seven short, hands-on lessons with live scenes, all built from the Who's Good AU rounded box.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://learn.whosgood.au/3d-box/">
+<link rel="canonical" href="https://learn.whosgood.au/3d-box/">
+<style>
+  :root {
+    --bg: #f6f7fb; --card: #ffffff; --text: #1d2230; --muted: #5d6578;
+    --line: #dde1ea; --accent: #3d6fe0; --accent-soft: #e6edfc;
+    --good: #1f8a4c; --bad: #c0392b; --code-bg: #f0f2f7;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0f1218; --card: #181c25; --text: #e7eaf1; --muted: #9aa3b5;
+      --line: #2a303d; --accent: #7aa2ff; --accent-soft: #1f2a44;
+      --good: #4cc27f; --bad: #ff7a6b; --code-bg: #11151d;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0f1218; --card: #181c25; --text: #e7eaf1; --muted: #9aa3b5;
+    --line: #2a303d; --accent: #7aa2ff; --accent-soft: #1f2a44;
+    --good: #4cc27f; --bad: #ff7a6b; --code-bg: #11151d;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font: 16px/1.6 system-ui, -apple-system, "Segoe UI", sans-serif;
+  }
+  header, main, footer { max-width: 920px; margin: 0 auto; padding: 0 16px; }
+  header { padding-top: 48px; padding-bottom: 8px; }
+  h1 { font-size: 2.2rem; line-height: 1.2; margin: 0 0 12px; }
+  h2 { font-size: 1.4rem; margin: 0 0 8px; }
+  .lead { color: var(--muted); font-size: 1.1rem; max-width: 640px; }
+  nav { display: flex; flex-wrap: wrap; gap: 8px; margin: 20px 0 8px; }
+  nav a {
+    font-size: .9rem; text-decoration: none; color: var(--accent);
+    background: var(--accent-soft); padding: 4px 12px; border-radius: 999px;
+  }
+  section {
+    background: var(--card); border: 1px solid var(--line); border-radius: 14px;
+    padding: 24px; margin: 24px 0;
+  }
+  .num { color: var(--accent); font-weight: 700; font-size: .85rem; letter-spacing: .05em; text-transform: uppercase; }
+  .grid { display: grid; grid-template-columns: 1fr; gap: 20px; margin-top: 16px; }
+  @media (min-width: 780px) { .grid { grid-template-columns: 3fr 2fr; } }
+  .stage {
+    position: relative; width: 100%; height: 320px; border-radius: 10px;
+    overflow: hidden; background: #141821;
+  }
+  .stage canvas { display: block; width: 100%; height: 100%; }
+  .hint {
+    position: absolute; left: 10px; bottom: 8px; font-size: .75rem;
+    color: #cfd6e4; background: rgba(0,0,0,.45); padding: 2px 8px; border-radius: 6px;
+    pointer-events: none;
+  }
+  .badge {
+    position: absolute; right: 10px; top: 8px; font: 600 .8rem/1.4 ui-monospace, Consolas, monospace;
+    color: #fff; background: rgba(0,0,0,.55); padding: 2px 8px; border-radius: 6px; pointer-events: none;
+  }
+  .controls { display: flex; flex-direction: column; gap: 12px; }
+  .controls label { display: flex; flex-direction: column; gap: 2px; font-size: .9rem; color: var(--muted); }
+  .controls label span { display: flex; justify-content: space-between; }
+  .controls output { color: var(--text); font-family: ui-monospace, Consolas, monospace; }
+  .controls .check { flex-direction: row; align-items: center; gap: 8px; color: var(--text); }
+  input[type=range] { width: 100%; accent-color: var(--accent); }
+  select, button {
+    font: inherit; color: var(--text); background: var(--bg); border: 1px solid var(--line);
+    border-radius: 8px; padding: 6px 10px; cursor: pointer;
+  }
+  button:hover { border-color: var(--accent); }
+  input[type=color] { width: 56px; height: 32px; border: 1px solid var(--line); border-radius: 6px; background: none; padding: 2px; }
+  pre {
+    background: var(--code-bg); border: 1px solid var(--line); border-radius: 8px;
+    padding: 12px 14px; overflow-x: auto; font: .85rem/1.5 ui-monospace, Consolas, monospace; margin: 16px 0 0;
+  }
+  .cmt { color: var(--muted); }
+  .words { display: grid; grid-template-columns: 1fr; gap: 8px; margin: 12px 0 0; }
+  @media (min-width: 600px) { .words { grid-template-columns: repeat(3, 1fr); } }
+  .word { border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; }
+  .word b { display: block; }
+  .word small { color: var(--muted); }
+  .try { border-left: 4px solid var(--accent); background: var(--accent-soft); padding: 10px 14px; border-radius: 0 8px 8px 0; margin-top: 16px; }
+  .quiz { margin-top: 16px; }
+  .quiz p { margin: 0 0 8px; font-weight: 600; }
+  .quiz .opts { display: flex; flex-wrap: wrap; gap: 8px; }
+  .quiz button.right { border-color: var(--good); color: var(--good); }
+  .quiz button.wrong { border-color: var(--bad); color: var(--bad); }
+  .quiz .fb { margin-top: 8px; min-height: 1.6em; font-size: .95rem; }
+  #progress { position: sticky; top: 0; height: 4px; background: var(--accent); width: 0; z-index: 5; transition: width .3s; }
+  footer { color: var(--muted); padding-bottom: 48px; font-size: .9rem; }
+  a { color: var(--accent); }
+  code { font-family: ui-monospace, Consolas, monospace; font-size: .92em; }
+
+  .wg-mark{display:inline-block; vertical-align:-4px; margin-left:8px; opacity:.55; transition:opacity .2s;}
+  .wg-mark:hover{opacity:1;}
+</style>
+<script type="importmap">
+{ "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+} }
+</script>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPHN2ZyBpZD0iTGF5ZXJfMSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB2ZXJzaW9uPSIxLjEiIHhtbG5zOnhsaW5rPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rIiB2aWV3Qm94PSIwIDAgMTAwMCAxMDAwIj4KICA8IS0tIEdlbmVyYXRvcjogQWRvYmUgSWxsdXN0cmF0b3IgMzAuOC4yLCBTVkcgRXhwb3J0IFBsdWctSW4gLiBTVkcgVmVyc2lvbjogMi4xLjQgQnVpbGQgNykgIC0tPgogIDxkZWZzPgogICAgPHN0eWxlPgogICAgICAuc3QwIHsKICAgICAgICBmaWxsOiAjZmZmOwogICAgICB9CgogICAgICAuc3QxIHsKICAgICAgICBmaWxsOiB1cmwoI2xpbmVhci1ncmFkaWVudCk7CiAgICAgIH0KICAgIDwvc3R5bGU+CiAgICA8bGluZWFyR3JhZGllbnQgaWQ9ImxpbmVhci1ncmFkaWVudCIgeDE9IjUwMCIgeTE9Ijg2OC40NyIgeDI9IjUwMCIgeTI9IjEzMS41MyIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiPgogICAgICA8c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiNmZjAiLz4KICAgICAgPHN0b3Agb2Zmc2V0PSIuMDMiIHN0b3AtY29sb3I9IiNmNmZhMDgiLz4KICAgICAgPHN0b3Agb2Zmc2V0PSIuMzkiIHN0b3AtY29sb3I9IiM4ZWJlNzAiLz4KICAgICAgPHN0b3Agb2Zmc2V0PSIuNjkiIHN0b3AtY29sb3I9IiM0MTkxYmQiLz4KICAgICAgPHN0b3Agb2Zmc2V0PSIuOSIgc3RvcC1jb2xvcj0iIzEyNzZlYyIvPgogICAgICA8c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiMwMDZjZmYiLz4KICAgIDwvbGluZWFyR3JhZGllbnQ+CiAgPC9kZWZzPgogIDxnPgogICAgPHJlY3QgY2xhc3M9InN0MCIgeD0iMjEyLjc0IiB5PSIyMDUuNDYiIHdpZHRoPSI1OTEuNjUiIGhlaWdodD0iNTkxLjY1Ii8+CiAgICA8cGF0aCBjbGFzcz0ic3QwIiBkPSJNNzk5Ljg5LDIwOS45NnY1ODIuNjVIMjE3LjI0VjIwOS45Nmg1ODIuNjVaTTgwOC44OSwyMDAuOTZIMjA4LjI0djYwMC42NWg2MDAuNjVWMjAwLjk2aDBaIi8+CiAgPC9nPgogIDxwYXRoIGNsYXNzPSJzdDEiIGQ9Ik03MjkuNjEsMTMxLjUzaC00NTkuMjJjLTc2LjY5LDAtMTM4Ljg2LDYyLjE3LTEzOC44NiwxMzguODZ2NDU5LjIyYzAsNzYuNjksNjIuMTcsMTM4Ljg2LDEzOC44NiwxMzguODZoNDU5LjIyYzc2LjY5LDAsMTM4Ljg2LTYyLjE3LDEzOC44Ni0xMzguODZ2LTQ1OS4yMmMwLTc2LjY5LTYyLjE3LTEzOC44Ni0xMzguODYtMTM4Ljg2Wk00NDUuNTgsNzY0LjA2aC05Ny4wOXYtOTYuMzVoOTcuMDl2OTYuMzVaTTczMi40Miw0NjQuNzFjMCw1NS45LTQ0Ljg3LDEwMS41LTEwMS41LDEwMS41aC0xODAuOTNjLTIuOTQsMC00LjQxLDEuNDctNC40MSw0LjQxdjQ5LjI4aC05Ny4wOXYtNDkuMjhjMC01NS45LDQ1LjYtMTAxLjUsMTAxLjUtMTAxLjVoMTgwLjkzYzIuOTQsMCw1LjE1LTEuNDcsNS4xNS00LjQxdi0xMjguNzFjMC0yLjk0LTIuMjEtNS4xNS01LjE1LTUuMTVoLTM1Ny40NnYtOTYuMzVoMzU3LjQ2YzU2LjYzLDAsMTAxLjUsNDUuNiwxMDEuNSwxMDEuNXYxMjguNzFaIi8+Cjwvc3ZnPg==">
+</head>
+<body>
+<div id="progress"></div>
+
+<header>
+  <h1>Learn 3D with the Who's Good AU Box</h1>
+  <p class="lead">
+    three.js is a free JavaScript library that draws 3D pictures in your web browser.
+    Games, product viewers and fancy websites use it. Here you learn the seven big ideas,
+    and every idea has a live 3D scene you can play with. The shapes are the <b>Who's Good AU box</b>: a rounded box with the brand gradient (yellow at the foot, blue at the head) and the white question mark.
+  </p>
+  <p style="margin:0 0 4px"><a href="../">&larr; All lessons</a></p>
+  <nav>
+    <a href="#l1">1 Three ingredients</a><a href="#l2">2 Shapes</a><a href="#l3">3 Moving things</a>
+    <a href="#l4">4 Light</a><a href="#l5">5 Animation</a><a href="#l6">6 Camera</a>
+    <a href="#l7">7 Solar system</a><a href="#l8">Your turn</a>
+  </nav>
+  <p class="lead" style="font-size:.95rem">Quiz score: <b id="score">0</b> / 7</p>
+</header>
+
+<main>
+
+<!-- 1 -->
+<section id="l1">
+  <div class="num">Lesson 1</div>
+  <h2>The three ingredients</h2>
+  <p>Every three.js picture needs the same three things. Think of a theatre:</p>
+  <div class="words">
+    <div class="word"><b>Scene</b><small>The stage. Everything you want to show goes onto it.</small></div>
+    <div class="word"><b>Camera</b><small>Your eyes. It decides where you look from.</small></div>
+    <div class="word"><b>Renderer</b><small>The painter. It paints what the camera sees onto the screen.</small></div>
+  </div>
+  <div class="grid">
+    <div class="stage" id="stage1"><span class="hint">drag to look around</span></div>
+    <div class="controls">
+      <button id="b1scene">Take the box off the stage</button>
+      <button id="b1render">Stop the painter (renderer)</button>
+      <p style="margin:0;color:var(--muted);font-size:.9rem">Press both buttons and watch what changes. When the painter stops, the picture freezes, even though the box is still turning inside the computer.</p>
+    </div>
+  </div>
+<pre><code>const scene    = new THREE.Scene();                    <span class="cmt">// the stage</span>
+const camera   = new THREE.PerspectiveCamera(50, width / height);  <span class="cmt">// the eyes</span>
+const renderer = new THREE.WebGLRenderer();            <span class="cmt">// the painter</span>
+
+scene.add(box);                   <span class="cmt">// put the box on the stage</span>
+renderer.render(scene, camera);   <span class="cmt">// paint one picture</span></code></pre>
+  <div class="quiz" data-answer="c">
+    <p>Quick check: which one paints the picture onto your screen?</p>
+    <div class="opts"><button data-k="a">Scene</button><button data-k="b">Camera</button><button data-k="c">Renderer</button></div>
+    <div class="fb"></div>
+  </div>
+</section>
+
+<!-- 2 -->
+<section id="l2">
+  <div class="num">Lesson 2</div>
+  <h2>Shapes: geometry + material = mesh</h2>
+  <p>A 3D object is called a <b>mesh</b>. It is made of two parts:
+  the <b>geometry</b> is the shape (a rounded box, a ball…), and the <b>material</b> is the skin (its color and how shiny it is).
+  Every shape is secretly built from tiny flat <b>triangles</b>. Turn on "wireframe" to see them.</p>
+  <div class="grid">
+    <div class="stage" id="stage2"><span class="hint">drag to look around</span><span class="badge" id="tri2"></span></div>
+    <div class="controls">
+      <label>Shape (geometry)
+        <select id="shape2">
+          <option value="box">WhosGoodAU_Box1 (rounded box)</option><option value="sphere">Sphere</option>
+          <option value="torus">Torus (donut)</option><option value="cone">Cone</option>
+          <option value="knot">Torus knot</option>
+        </select>
+      </label>
+      <label>Tint (material) <input type="color" id="color2" value="#ffffff"></label>
+      <p style="margin:0;color:var(--muted);font-size:.9rem">White keeps the brand gradient. Any other color is mixed into it.</p>
+      <label class="check"><input type="checkbox" id="wire2"> Wireframe: show the triangles</label>
+    </div>
+  </div>
+  <pre><code id="code2"></code></pre>
+  <div class="try">Try this: pick the sphere, turn on wireframe, and count roughly how many triangles go around the middle.</div>
+  <div class="quiz" data-answer="a">
+    <p>Quick check: what two things does a mesh need?</p>
+    <div class="opts"><button data-k="a">Geometry and material</button><button data-k="b">Camera and light</button><button data-k="c">Color and size</button></div>
+    <div class="fb"></div>
+  </div>
+</section>
+
+<!-- 3 -->
+<section id="l3">
+  <div class="num">Lesson 3</div>
+  <h2>Moving things: position, rotation, scale</h2>
+  <p>3D space has three directions, called <b>axes</b>:
+  <b style="color:#e5484d">x</b> goes left–right (red line),
+  <b style="color:#30a46c">y</b> goes up–down (green line),
+  <b style="color:#3e63dd">z</b> goes towards you and away (blue line).
+  Every object has a <b>position</b> (where), a <b>rotation</b> (turned how far) and a <b>scale</b> (how big).</p>
+  <div class="grid">
+    <div class="stage" id="stage3"><span class="hint">drag to look around</span></div>
+    <div class="controls">
+      <label><span>position.x <output for="px3"></output></span><input type="range" id="px3" min="-2" max="2" step="0.1" value="0"></label>
+      <label><span>position.y <output for="py3"></output></span><input type="range" id="py3" min="0" max="2" step="0.1" value="0.5"></label>
+      <label><span>position.z <output for="pz3"></output></span><input type="range" id="pz3" min="-2" max="2" step="0.1" value="0"></label>
+      <label><span>rotation.y (degrees) <output for="ry3"></output></span><input type="range" id="ry3" min="0" max="360" step="5" value="0"></label>
+      <label><span>scale <output for="sc3"></output></span><input type="range" id="sc3" min="0.3" max="2" step="0.1" value="1"></label>
+    </div>
+  </div>
+  <pre><code id="code3"></code></pre>
+  <div class="try">Good to know: three.js measures turning in <b>radians</b>, not degrees. A full turn (360°) is 2 × π ≈ 6.28 radians. Watch the number in the code change as you move the rotation slider.</div>
+  <div class="quiz" data-answer="b">
+    <p>Quick check: which axis points up?</p>
+    <div class="opts"><button data-k="a">x (red)</button><button data-k="b">y (green)</button><button data-k="c">z (blue)</button></div>
+    <div class="fb"></div>
+  </div>
+</section>
+
+<!-- 4 -->
+<section id="l4">
+  <div class="num">Lesson 4</div>
+  <h2>Light and shadow</h2>
+  <p>Without light, a 3D world is pitch black, just like a room at night. Some materials react to light and some ignore it.
+  The little yellow ball is the <b>light bulb</b>. <b>Ambient light</b> is soft light that comes from everywhere, like a cloudy sky.</p>
+  <div class="grid">
+    <div class="stage" id="stage4"><span class="hint">drag to look around</span></div>
+    <div class="controls">
+      <label>Material
+        <select id="mat4">
+          <option value="standard">MeshStandardMaterial (realistic)</option>
+          <option value="lambert">MeshLambertMaterial (matte, fast)</option>
+          <option value="basic">MeshBasicMaterial (ignores light)</option>
+        </select>
+      </label>
+      <label><span>Bulb position (angle) <output for="ang4"></output></span><input type="range" id="ang4" min="0" max="360" step="5" value="45"></label>
+      <label><span>Ambient light <output for="amb4"></output></span><input type="range" id="amb4" min="0" max="2" step="0.05" value="0.3"></label>
+      <label><span>Roughness (only Standard) <output for="rough4"></output></span><input type="range" id="rough4" min="0" max="1" step="0.05" value="0.4"></label>
+      <label>Bulb color <input type="color" id="lcol4" value="#ffffff"></label>
+      <label class="check"><input type="checkbox" id="shadow4" checked> Cast a shadow</label>
+    </div>
+  </div>
+  <pre><code id="code4"></code></pre>
+  <div class="try">Try this: set ambient light to 0 and move the bulb behind the box. Then switch to MeshBasicMaterial. What happens?</div>
+  <div class="quiz" data-answer="a">
+    <p>Quick check: which material ignores light completely?</p>
+    <div class="opts"><button data-k="a">MeshBasicMaterial</button><button data-k="b">MeshLambertMaterial</button><button data-k="c">MeshStandardMaterial</button></div>
+    <div class="fb"></div>
+  </div>
+</section>
+
+<!-- 5 -->
+<section id="l5">
+  <div class="num">Lesson 5</div>
+  <h2>Animation: many pictures per second</h2>
+  <p>Movement on a screen is a trick, just like in a cartoon flip-book. The computer paints a still picture,
+  changes things a tiny bit, and paints again, about <b>60 times every second</b>. This repeating is called the <b>animation loop</b>.</p>
+  <div class="grid">
+    <div class="stage" id="stage5"><span class="hint">drag to look around</span><span class="badge" id="fps5"></span></div>
+    <div class="controls">
+      <label><span>Spin speed <output for="spd5"></output></span><input type="range" id="spd5" min="0" max="6" step="0.1" value="1.5"></label>
+      <label class="check"><input type="checkbox" id="bounce5" checked> Bounce (uses Math.sin, a wave that goes up and down)</label>
+      <label class="check"><input type="checkbox" id="slow5"> Slow motion: only 4 pictures per second</label>
+      <p style="margin:0;color:var(--muted);font-size:.9rem">The counter in the corner shows how many pictures were painted so far.</p>
+    </div>
+  </div>
+<pre><code>function animate() {
+  box.rotation.y += speed * delta;            <span class="cmt">// turn a tiny bit</span>
+  ball.position.y = Math.abs(Math.sin(time)); <span class="cmt">// bounce up and down</span>
+  renderer.render(scene, camera);             <span class="cmt">// paint one picture</span>
+  requestAnimationFrame(animate);             <span class="cmt">// ...and do it all again</span>
+}
+animate();</code></pre>
+  <div class="try">Try this: tick "slow motion". Now you can see the single pictures, like a flip-book.</div>
+  <div class="quiz" data-answer="b">
+    <p>Quick check: why does the box seem to move?</p>
+    <div class="opts"><button data-k="a">It is a video file</button><button data-k="b">Many still pictures are painted very fast</button><button data-k="c">The screen moves</button></div>
+    <div class="fb"></div>
+  </div>
+</section>
+
+<!-- 6 -->
+<section id="l6">
+  <div class="num">Lesson 6</div>
+  <h2>The camera and perspective</h2>
+  <p>The camera has a <b>field of view</b> (short: <code>fov</code>): how wide it can see, in degrees.
+  A small number is like a zoom lens (you see less, but bigger). A big number is like a fish-eye lens.
+  Things far away look smaller: that is called <b>perspective</b>.</p>
+  <div class="grid">
+    <div class="stage" id="stage6"><span class="hint">drag to look around</span></div>
+    <div class="controls">
+      <label><span>Field of view (fov) <output for="fov6"></output></span><input type="range" id="fov6" min="10" max="120" step="1" value="50"></label>
+      <button id="reset6">Reset camera</button>
+      <button id="city6">Roll a new city</button>
+      <p style="margin:0;color:var(--muted);font-size:.9rem">Your eye sees about 120° from side to side, but games mostly use 60–90°.</p>
+    </div>
+  </div>
+  <pre><code id="code6"></code></pre>
+  <div class="quiz" data-answer="a">
+    <p>Quick check: a small field of view is like…</p>
+    <div class="opts"><button data-k="a">zooming in</button><button data-k="b">zooming out</button><button data-k="c">turning the camera off</button></div>
+    <div class="fb"></div>
+  </div>
+</section>
+
+<!-- 7 -->
+<section id="l7">
+  <div class="num">Lesson 7</div>
+  <h2>Putting it together: a solar system</h2>
+  <p>Objects can carry other objects, like a parent carrying a child. In three.js this is a <b>Group</b>.
+  The Moon sits inside the Earth's group, so when the Earth travels around the Sun, the Moon comes along,
+  and it still circles the Earth at the same time. This is called a <b>scene graph</b> (a family tree of objects).</p>
+  <div class="grid">
+    <div class="stage" id="stage7" style="height:360px"><span class="hint">drag to look around</span></div>
+    <div class="controls">
+      <label><span>Time speed <output for="spd7"></output></span><input type="range" id="spd7" min="0" max="5" step="0.1" value="1"></label>
+      <label class="check"><input type="checkbox" id="axes7"> Show each group's own axes</label>
+      <label class="check"><input type="checkbox" id="orbit7" checked> Show orbit lines</label>
+<pre style="margin:0"><code>scene
+ └─ sun
+ └─ earthOrbit (Group)
+     └─ earth
+         └─ moonOrbit (Group)
+             └─ moon</code></pre>
+    </div>
+  </div>
+<pre><code>const earthOrbit = new THREE.Group();   <span class="cmt">// an invisible "arm" from the Sun</span>
+scene.add(earthOrbit);
+earth.position.x = 3.2;                 <span class="cmt">// put Earth at the end of the arm</span>
+earthOrbit.add(earth);                  <span class="cmt">// Earth is a child of the arm</span>
+earth.add(moonOrbit);                   <span class="cmt">// the Moon's arm is a child of Earth</span>
+
+<span class="cmt">// in the animation loop: just turn the arms</span>
+earthOrbit.rotation.y += 0.3 * delta;
+moonOrbit.rotation.y  += 2.0 * delta;</code></pre>
+  <div class="quiz" data-answer="a">
+    <p>Quick check: when the Earth's group turns, what happens to the Moon?</p>
+    <div class="opts"><button data-k="a">It travels along with the Earth</button><button data-k="b">It stays where it is</button><button data-k="c">It disappears</button></div>
+    <div class="fb"></div>
+  </div>
+</section>
+
+<!-- 8 -->
+<section id="l8">
+  <div class="num">Your turn</div>
+  <h2>Look inside and change it</h2>
+  <p>This whole lesson is one web page, and you can read all of its code.</p>
+  <ol>
+    <li>Right-click the page and choose <b>View page source</b> (or press <b>Ctrl+U</b>). Everything you played with is in there.</li>
+    <li>Press <b>F12</b> to open the <b>developer tools</b>, where programmers see error messages. You can't break anything there.</li>
+    <li>To try your own version, save the page (<b>Ctrl+S</b>), open the saved file in Notepad, search for <code>#006cff</code> (the blue at the head of the gradient) and change it to another color such as <code>#ff3366</code>. Open the file in your browser again: the boxes now fade to a new color.</li>
+  </ol>
+  <p>Want more? The official site <a href="https://threejs.org/examples/" target="_blank" rel="noopener">threejs.org/examples</a> has hundreds of demos, and the code is on <a href="https://github.com/mrdoob/three.js/" target="_blank" rel="noopener">GitHub</a>.</p>
+</section>
+
+</main>
+<footer>Made with three.js r170, in the Who's Good AU Box1 style.<img class="wg-mark" src="data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPHN2ZyBpZD0iTGF5ZXJfMSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB2ZXJzaW9uPSIxLjEiIHhtbG5zOnhsaW5rPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rIiB2aWV3Qm94PSIwIDAgMTAwMCAxMDAwIj4KICA8IS0tIEdlbmVyYXRvcjogQWRvYmUgSWxsdXN0cmF0b3IgMzAuOC4yLCBTVkcgRXhwb3J0IFBsdWctSW4gLiBTVkcgVmVyc2lvbjogMi4xLjQgQnVpbGQgNykgIC0tPgogIDxkZWZzPgogICAgPHN0eWxlPgogICAgICAuc3QwIHsKICAgICAgICBmaWxsOiAjZmZmOwogICAgICB9CgogICAgICAuc3QxIHsKICAgICAgICBmaWxsOiB1cmwoI2xpbmVhci1ncmFkaWVudCk7CiAgICAgIH0KICAgIDwvc3R5bGU+CiAgICA8bGluZWFyR3JhZGllbnQgaWQ9ImxpbmVhci1ncmFkaWVudCIgeDE9IjUwMCIgeTE9Ijg2OC40NyIgeDI9IjUwMCIgeTI9IjEzMS41MyIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiPgogICAgICA8c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiNmZjAiLz4KICAgICAgPHN0b3Agb2Zmc2V0PSIuMDMiIHN0b3AtY29sb3I9IiNmNmZhMDgiLz4KICAgICAgPHN0b3Agb2Zmc2V0PSIuMzkiIHN0b3AtY29sb3I9IiM4ZWJlNzAiLz4KICAgICAgPHN0b3Agb2Zmc2V0PSIuNjkiIHN0b3AtY29sb3I9IiM0MTkxYmQiLz4KICAgICAgPHN0b3Agb2Zmc2V0PSIuOSIgc3RvcC1jb2xvcj0iIzEyNzZlYyIvPgogICAgICA8c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiMwMDZjZmYiLz4KICAgIDwvbGluZWFyR3JhZGllbnQ+CiAgPC9kZWZzPgogIDxnPgogICAgPHJlY3QgY2xhc3M9InN0MCIgeD0iMjEyLjc0IiB5PSIyMDUuNDYiIHdpZHRoPSI1OTEuNjUiIGhlaWdodD0iNTkxLjY1Ii8+CiAgICA8cGF0aCBjbGFzcz0ic3QwIiBkPSJNNzk5Ljg5LDIwOS45NnY1ODIuNjVIMjE3LjI0VjIwOS45Nmg1ODIuNjVaTTgwOC44OSwyMDAuOTZIMjA4LjI0djYwMC42NWg2MDAuNjVWMjAwLjk2aDBaIi8+CiAgPC9nPgogIDxwYXRoIGNsYXNzPSJzdDEiIGQ9Ik03MjkuNjEsMTMxLjUzaC00NTkuMjJjLTc2LjY5LDAtMTM4Ljg2LDYyLjE3LTEzOC44NiwxMzguODZ2NDU5LjIyYzAsNzYuNjksNjIuMTcsMTM4Ljg2LDEzOC44NiwxMzguODZoNDU5LjIyYzc2LjY5LDAsMTM4Ljg2LTYyLjE3LDEzOC44Ni0xMzguODZ2LTQ1OS4yMmMwLTc2LjY5LTYyLjE3LTEzOC44Ni0xMzguODYtMTM4Ljg2Wk00NDUuNTgsNzY0LjA2aC05Ny4wOXYtOTYuMzVoOTcuMDl2OTYuMzVaTTczMi40Miw0NjQuNzFjMCw1NS45LTQ0Ljg3LDEwMS41LTEwMS41LDEwMS41aC0xODAuOTNjLTIuOTQsMC00LjQxLDEuNDctNC40MSw0LjQxdjQ5LjI4aC05Ny4wOXYtNDkuMjhjMC01NS45LDQ1LjYtMTAxLjUsMTAxLjUtMTAxLjVoMTgwLjkzYzIuOTQsMCw1LjE1LTEuNDcsNS4xNS00LjQxdi0xMjguNzFjMC0yLjk0LTIuMjEtNS4xNS01LjE1LTUuMTVoLTM1Ny40NnYtOTYuMzVoMzU3LjQ2YzU2LjYzLDAsMTAxLjUsNDUuNiwxMDEuNSwxMDEuNXYxMjguNzFaIi8+Cjwvc3ZnPg==" alt="Who's Good AU" title="Who's Good AU" width="18" height="18"></footer>
+
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
+
+const $ = (id) => document.getElementById(id);
+const deg = THREE.MathUtils.degToRad;
+
+/* ---------- the Who's Good AU Box1 style ----------
+   Copied from ../js/whosgood-logo.js and ../js/whosgood-cube_v2.js (inlined, so this page also works when you
+   double-click it). A shape in this style has: rounded edges (the logo box's own corner proportion), the brand
+   gradient painted per pixel by height (yellow at the foot, blue at the head), and on a cube the white
+   question mark on the four sides. */
+const WG = {
+  viewBox: 1000, boxSize: 736.94, cornerRatio: 138.86 / 736.94,
+  stops: [[0, '#ffff00'], [0.03, '#f6fa08'], [0.39, '#8ebe70'], [0.69, '#4191bd'], [0.9, '#1276ec'], [1, '#006cff']],
+  markPath:
+    'M445.58,764.06h-97.09v-96.35h97.09v96.35ZM732.42,464.71c0,55.9-44.87,101.5-101.5,101.5h-180.93' +
+    'c-2.94,0-4.41,1.47-4.41,4.41v49.28h-97.09v-49.28c0-55.9,45.6-101.5,101.5-101.5h180.93c2.94,0,5.15-1.47,5.15-4.41' +
+    'v-128.71c0-2.94-2.21-5.15-5.15-5.15h-357.46v-96.35h357.46c56.63,0,101.5,45.6,101.5,101.5v128.71Z',
+};
+// a 1 x 256 strip holding a gradient; the shader looks up a colour by height (foot = 0, head = 1)
+function makeRamp(stops) {
+  const canvas = Object.assign(document.createElement('canvas'), { width: 1, height: 256 });
+  const c = canvas.getContext('2d');
+  const g = c.createLinearGradient(0, 256, 0, 0);
+  for (const [p, col] of stops) g.addColorStop(p, col);
+  c.fillStyle = g;
+  c.fillRect(0, 0, 1, 256);
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.colorSpace = THREE.SRGBColorSpace; // brand colours are sRGB; the scene works in linear
+  return texture;
+}
+const rampTexture = makeRamp(WG.stops);
+// the white question mark, drawn on a transparent canvas
+const markCanvas = Object.assign(document.createElement('canvas'), { width: 512, height: 512 });
+{
+  const c = markCanvas.getContext('2d');
+  c.scale(512 / WG.viewBox, 512 / WG.viewBox);
+  c.fillStyle = '#ffffff';
+  c.fill(new Path2D(WG.markPath));
+}
+const markTexture = new THREE.CanvasTexture(markCanvas);
+markTexture.colorSpace = THREE.SRGBColorSpace;
+markTexture.anisotropy = 8;
+const markMaterial = new THREE.MeshBasicMaterial({ map: markTexture, transparent: true, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -2 });
+const markPlane = new THREE.PlaneGeometry(1, 1);
+const ROUND = 1.1; // the edge radius is the logo box's corner proportion times this (1 = exactly like the logo)
+const MARK_SCALE = 1.3; // 1 = the mark sits as in the logo; bigger = a larger white question mark on each face
+
+/** A material (standard, lambert or basic) that paints the brand gradient over the shape. `color` tints it; `ramp` (from makeRamp) swaps in another gradient. */
+function wgMaterial(kind = 'standard', options = {}) {
+  const Material = { standard: THREE.MeshStandardMaterial, lambert: THREE.MeshLambertMaterial, basic: THREE.MeshBasicMaterial }[kind];
+  const { ramp, ...rest } = options;
+  const m = new Material(kind === 'standard' ? { roughness: 0.38, metalness: 0.02, ...rest } : rest);
+  const range = { value: new THREE.Vector2(-1, 1) }; // lowest and highest point of the shape (see wgFit)
+  m.userData.wgRange = range;
+  m.onBeforeCompile = (shader) => {
+    shader.uniforms.wgRamp = { value: ramp ?? rampTexture };
+    shader.uniforms.wgRange = range;
+    shader.vertexShader = 'varying float vWgY;\n' + shader.vertexShader.replace(
+      '#include <begin_vertex>', '#include <begin_vertex>\n  vWgY = position.y;');
+    shader.fragmentShader = 'uniform sampler2D wgRamp;\nuniform vec2 wgRange;\nvarying float vWgY;\n' +
+      shader.fragmentShader.replace('#include <color_fragment>', '#include <color_fragment>\n' +
+        '  diffuseColor.rgb *= texture2D(wgRamp, vec2(0.5, clamp((vWgY - wgRange.x) / (wgRange.y - wgRange.x), 0.0, 1.0))).rgb;');
+  };
+  return m;
+}
+/** Tell the gradient where the foot and the head of this mesh are (its own bounding box). */
+function wgFit(mesh) {
+  mesh.geometry.computeBoundingBox();
+  const { min, max } = mesh.geometry.boundingBox;
+  mesh.material.userData.wgRange.value.set(min.y, max.y);
+  return mesh;
+}
+/** Any geometry with the brand gradient. */
+function wgMesh(geometry, kind = 'standard', options = {}) {
+  return wgFit(new THREE.Mesh(geometry, wgMaterial(kind, options)));
+}
+/**
+ * The Who's Good AU box: a rounded box with the brand gradient. width, height and depth are the full outside size.
+ * With mark: true (cubes only) the white question mark sits on the four sides. Returns a Group; group.body is the box.
+ */
+function wgBox(w = 1, h = w, d = w, { mark = false, material = null, kind = 'standard', options = {} } = {}) {
+  const radius = (ROUND * WG.cornerRatio * Math.min(w, h, d)) / (1 + 2 * WG.cornerRatio);
+  const body = new THREE.Mesh(new RoundedBoxGeometry(w, h, d, 8, radius), material ?? wgMaterial(kind, options));
+  wgFit(body);
+  body.castShadow = true;
+  const group = new THREE.Group();
+  group.body = body;
+  group.add(body);
+  if (mark) {
+    const flat = w - 2 * radius; // the flat part of a face is exactly the logo box
+    for (let i = 0; i < 4; i++) {
+      const face = new THREE.Mesh(markPlane, markMaterial);
+      face.userData.decal = true;
+      face.scale.setScalar(flat * MARK_SCALE * WG.viewBox / WG.boxSize);
+      face.rotation.y = (i * Math.PI) / 2;
+      face.translateZ(w / 2 + 0.002);
+      group.add(face);
+    }
+  }
+  return group;
+}
+
+/* ---------- shared helpers ---------- */
+const stages = [];
+function makeStage(id, camPos, target = [0, 0, 0]) {
+  const wrap = $(id);
+  const renderer = new THREE.WebGLRenderer({ antialias: true });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  wrap.prepend(renderer.domElement);
+  const scene = new THREE.Scene();
+  scene.background = new THREE.Color('#141821');
+  const camera = new THREE.PerspectiveCamera(50, 1, 0.1, 200);
+  camera.position.set(...camPos);
+  const controls = new OrbitControls(camera, renderer.domElement);
+  controls.target.set(...target);
+  controls.enableDamping = true;
+  controls.enableZoom = false; // so the mouse wheel still scrolls the page
+  controls.enablePan = false;
+  controls.update();
+  const st = { wrap, renderer, scene, camera, controls, update: null, visible: false, running: true, frames: 0 };
+  const resize = () => {
+    const w = wrap.clientWidth, h = wrap.clientHeight;
+    renderer.setSize(w, h, false);
+    camera.aspect = w / h;
+    camera.updateProjectionMatrix();
+  };
+  new ResizeObserver(resize).observe(wrap);
+  resize();
+  new IntersectionObserver(([e]) => { st.visible = e.isIntersecting; }).observe(wrap);
+  stages.push(st);
+  return st;
+}
+function addLights(scene) {
+  scene.add(new THREE.HemisphereLight('#ffffff', '#5a6b8c', 1.3));
+  const sun = new THREE.DirectionalLight('#ffffff', 2.2);
+  sun.position.set(3, 5, 4);
+  scene.add(sun);
+}
+function bindRange(id, fn) {
+  const el = $(id), out = document.querySelector(`output[for="${id}"]`);
+  const h = () => { if (out) out.textContent = el.value; fn(parseFloat(el.value)); };
+  el.addEventListener('input', h);
+  return h;
+}
+
+/* ---------- Lesson 1: scene, camera, renderer ---------- */
+{
+  const s = makeStage('stage1', [2.5, 2, 3.5]);
+  addLights(s.scene);
+  const box = wgBox(1.7, 1.7, 1.7, { mark: true });
+  s.scene.add(box);
+  s.update = (dt) => { box.rotation.x += dt * 0.5; box.rotation.y += dt * 0.8; box.rotation.z += dt * 0.3; }; // tumbles in every direction
+  $('b1scene').onclick = (e) => {
+    if (box.parent) { s.scene.remove(box); e.target.textContent = 'Put the box back on the stage'; }
+    else { s.scene.add(box); e.target.textContent = 'Take the box off the stage'; }
+  };
+  $('b1render').onclick = (e) => {
+    s.running = !s.running;
+    e.target.textContent = s.running ? 'Stop the painter (renderer)' : 'Start the painter again';
+  };
+}
+
+/* ---------- Lesson 2: geometry + material ---------- */
+{
+  const s = makeStage('stage2', [2.5, 2, 3.5]);
+  addLights(s.scene);
+  const material = wgMaterial('standard');
+  const shape = (geo) => wgFit(new THREE.Mesh(geo, material));
+  const shapes = {
+    box:    [() => wgBox(1.7, 1.7, 1.7, { mark: true, material }), 'RoundedBoxGeometry(1.7, 1.7, 1.7, 8, 0.26)'],
+    sphere: [() => shape(new THREE.SphereGeometry(0.9, 32, 16)), 'THREE.SphereGeometry(0.9, 32, 16)'],
+    torus:  [() => shape(new THREE.TorusGeometry(0.7, 0.28, 24, 64)), 'THREE.TorusGeometry(0.7, 0.28, 24, 64)'],
+    cone:   [() => shape(new THREE.ConeGeometry(0.8, 1.5, 32)), 'THREE.ConeGeometry(0.8, 1.5, 32)'],
+    knot:   [() => shape(new THREE.TorusKnotGeometry(0.6, 0.2, 128, 16)), 'THREE.TorusKnotGeometry(0.6, 0.2, 128, 16)'],
+  };
+  let current = null;
+  const holder = new THREE.Group();
+  s.scene.add(holder);
+  s.update = (dt) => { holder.rotation.y += dt * 0.5; };
+  const refresh = () => {
+    const key = $('shape2').value;
+    if (current) { holder.remove(current); current.traverse((o) => { if (o.isMesh && !o.userData.decal) o.geometry.dispose(); }); }
+    current = shapes[key][0]();
+    holder.add(current);
+    material.color.set($('color2').value);
+    material.wireframe = $('wire2').checked;
+    let tris = 0;
+    current.traverse((o) => {
+      if (!o.isMesh || o.userData.decal) return; // count the shape itself, not the little question-mark pictures
+      const g = o.geometry;
+      tris += (g.index ? g.index.count : g.attributes.position.count) / 3;
+    });
+    $('tri2').textContent = `${tris.toLocaleString()} triangles`;
+    $('code2').innerHTML =
+`const geometry = new ${shapes[key][1]};
+const material = wgMaterial('standard', { color: '${$('color2').value}'${material.wireframe ? ', wireframe: true' : ''} });
+<span class="cmt">// wgMaterial = MeshStandardMaterial + the Who's Good AU gradient (yellow foot, blue head)</span>
+const mesh = new THREE.Mesh(geometry, material);
+scene.add(mesh);`;
+  };
+  ['shape2', 'color2', 'wire2'].forEach((id) => $(id).addEventListener('input', refresh));
+  refresh();
+}
+
+/* ---------- Lesson 3: position, rotation, scale ---------- */
+{
+  const s = makeStage('stage3', [4.5, 3.5, 5.5], [0, 0.5, 0]);
+  addLights(s.scene);
+  s.scene.add(new THREE.GridHelper(6, 12, '#3a4255', '#262c3a'));
+  const axes = new THREE.AxesHelper(2.6);
+  axes.setColors('#e5484d', '#30a46c', '#3e63dd');
+  s.scene.add(axes);
+  const mesh = wgBox(1, 1, 1, { mark: true }); // the question mark shows which way the box faces
+  s.scene.add(mesh);
+  const v = { px3: 0, py3: 0.5, pz3: 0, ry3: 0, sc3: 1 };
+  const show = () => {
+    mesh.position.set(v.px3, v.py3, v.pz3);
+    mesh.rotation.y = deg(v.ry3);
+    mesh.scale.setScalar(v.sc3);
+    $('code3').innerHTML =
+`mesh.position.set(${v.px3}, ${v.py3}, ${v.pz3});
+mesh.rotation.y = ${deg(v.ry3).toFixed(2)};   <span class="cmt">// ${v.ry3}° in radians</span>
+mesh.scale.set(${v.sc3}, ${v.sc3}, ${v.sc3});`;
+  };
+  Object.keys(v).forEach((id) => bindRange(id, (x) => { v[id] = x; show(); })());
+}
+
+/* ---------- Lesson 4: light ---------- */
+{
+  const s = makeStage('stage4', [3.5, 3, 4.5], [0, 0.6, 0]);
+  s.renderer.shadowMap.enabled = true;
+  s.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  const ambient = new THREE.AmbientLight('#ffffff', 0.3);
+  s.scene.add(ambient);
+  const light = new THREE.PointLight('#ffffff', 2.5, 0, 0);
+  light.castShadow = true;
+  light.shadow.mapSize.set(1024, 1024);
+  s.scene.add(light);
+  const bulb = new THREE.Mesh(new THREE.SphereGeometry(0.08, 16, 8), new THREE.MeshBasicMaterial({ color: '#ffe066' }));
+  light.add(bulb);
+  const floor = new THREE.Mesh(new THREE.PlaneGeometry(8, 8), new THREE.MeshStandardMaterial({ color: '#59607a' }));
+  floor.rotation.x = -Math.PI / 2;
+  floor.receiveShadow = true;
+  s.scene.add(floor);
+  const box = wgBox(1.7, 1.7, 1.7, { mark: true, options: { roughness: 0.4 } });
+  box.position.y = 0.85;
+  box.body.userData.kind = 'standard';
+  s.scene.add(box);
+
+  const names = { standard: 'MeshStandardMaterial', lambert: 'MeshLambertMaterial', basic: 'MeshBasicMaterial' };
+  const st = { ang4: 45, amb4: 0.3, rough4: 0.4 };
+  const show = () => {
+    const kind = $('mat4').value;
+    const a = deg(st.ang4);
+    light.position.set(Math.cos(a) * 2.2, 2, Math.sin(a) * 2.2);
+    light.color.set($('lcol4').value);
+    bulb.material.color.set($('lcol4').value);
+    ambient.intensity = st.amb4;
+    light.castShadow = $('shadow4').checked;
+    if (box.body.userData.kind !== kind) {
+      box.body.material.dispose();
+      box.body.material = wgMaterial(kind);
+      box.body.userData.kind = kind;
+      wgFit(box.body);
+    }
+    if (kind === 'standard') box.body.material.roughness = st.rough4;
+    $('rough4').disabled = kind !== 'standard';
+    const p = light.position;
+    $('code4').innerHTML =
+`const light = new THREE.PointLight('${$('lcol4').value}', 2.5);
+light.position.set(${p.x.toFixed(1)}, ${p.y.toFixed(1)}, ${p.z.toFixed(1)});
+light.castShadow = ${light.castShadow};
+scene.add(new THREE.AmbientLight('#ffffff', ${st.amb4}));
+box.material = wgMaterial('${kind}'${kind === 'standard' ? `, { roughness: ${st.rough4} }` : ''});
+<span class="cmt">// = ${names[kind]} + the Who's Good AU gradient</span>`;
+  };
+  Object.keys(st).forEach((id) => bindRange(id, (x) => { st[id] = x; show(); })());
+  ['mat4', 'lcol4', 'shadow4'].forEach((id) => $(id).addEventListener('input', show));
+  show();
+}
+
+/* ---------- Lesson 5: animation loop ---------- */
+{
+  const s = makeStage('stage5', [0, 2, 5], [0, 0.8, 0]);
+  addLights(s.scene);
+  s.scene.add(new THREE.GridHelper(6, 12, '#3a4255', '#262c3a'));
+  const box = wgBox(1.2, 1.2, 1.2, { mark: true });
+  box.position.set(-1.2, 0.6, 0);
+  const ball = wgMesh(new THREE.SphereGeometry(0.55, 32, 16));
+  ball.position.set(1.2, 0.55, 0);
+  s.scene.add(box, ball);
+  let speed = 1.5, time = 0, wait = 0;
+  bindRange('spd5', (x) => { speed = x; })();
+  s.update = (dt) => {
+    if ($('slow5').checked) {               // only paint 4 pictures per second
+      wait += dt;
+      if (wait < 0.25) { s.skip = true; return; }
+      dt = wait; wait = 0;
+    }
+    s.skip = false;
+    time += dt;
+    box.rotation.y += speed * dt;
+    ball.position.y = $('bounce5').checked ? 0.55 + Math.abs(Math.sin(time * 3)) * 1.4 : 0.55;
+    $('fps5').textContent = `picture #${(s.frames + 1).toLocaleString()}`;
+  };
+}
+
+/* ---------- Lesson 6: camera ---------- */
+{
+  const start = [0, 7, 15];
+  const target = [0, 2, 0];
+  const s = makeStage('stage6', start, target);
+  addLights(s.scene);
+  s.scene.add(new THREE.GridHelper(30, 30, '#3a4255', '#262c3a')); // grid lines sit on whole numbers
+
+  // a city of Who's Good AU boxes on a disc. Every building stands in one grid cell (or two side by side),
+  // so the city lines up with the grid. Gradients: the brand yellow-blue, red-blue or red-yellow.
+  const CITY_RADIUS = 7, BUILDINGS = 75;
+  const RED = '#ff1f2d', BLUE = '#006cff', YELLOW = '#ffff00';
+  const ramps = [undefined, makeRamp([[0, RED], [1, BLUE]]), makeRamp([[0, RED], [1, YELLOW]])]; // undefined = brand gradient
+  const rand = (lo, hi) => lo + Math.random() * (hi - lo);
+  const city = new THREE.Group();
+  s.scene.add(city);
+  const cells = [];
+  for (let ix = -CITY_RADIUS; ix < CITY_RADIUS; ix++)
+    for (let iz = -CITY_RADIUS; iz < CITY_RADIUS; iz++)
+      if (Math.hypot(ix + 0.5, iz + 0.5) < CITY_RADIUS) cells.push([ix, iz]);
+  const buildCity = () => {
+    for (const b of [...city.children]) { // throw the old city away (and free its memory)
+      city.remove(b);
+      b.body.geometry.dispose();
+      b.body.material.dispose();
+    }
+    for (let i = cells.length - 1; i > 0; i--) { // shuffle the cells
+      const j = Math.floor(Math.random() * (i + 1));
+      [cells[i], cells[j]] = [cells[j], cells[i]];
+    }
+    const taken = new Set();
+    const key = (ix, iz) => ix + ',' + iz;
+    const free = (ix, iz) => !taken.has(key(ix, iz)) && Math.hypot(ix + 0.5, iz + 0.5) < CITY_RADIUS;
+    let count = 0;
+    for (const [ix, iz] of cells) {
+      if (count >= BUILDINGS) break;
+      if (!free(ix, iz)) continue;
+      let cw = 1, cd = 1; // size in grid cells
+      if (Math.random() < 0.25) { // sometimes a wide building over two cells
+        if (Math.random() < 0.5 && free(ix + 1, iz)) cw = 2;
+        else if (free(ix, iz + 1)) cd = 2;
+      }
+      for (let x = 0; x < cw; x++) for (let z = 0; z < cd; z++) taken.add(key(ix + x, iz + z));
+      const w = cw - rand(0.15, 0.5), d = cd - rand(0.15, 0.5); // a little gap to the next building
+      const cx = ix + cw / 2, cz = iz + cd / 2;
+      const r = Math.hypot(cx, cz);
+      let h = rand(0.5, 1.6) + (1 - r / CITY_RADIUS) * rand(0, 4.5); // taller towards the middle
+      if (r < CITY_RADIUS * 0.5 && Math.random() < 0.35) h += rand(2.5, 5); // plus a few towers in the centre
+      const material = wgMaterial('standard', { ramp: ramps[Math.floor(Math.random() * ramps.length)] });
+      const bld = wgBox(w, h, d, { material });
+      bld.position.set(cx, h / 2, cz);
+      city.add(bld);
+      count++;
+    }
+  };
+  buildCity();
+  $('city6').onclick = buildCity;
+
+  bindRange('fov6', (f) => {
+    s.camera.fov = f;
+    s.camera.updateProjectionMatrix();
+    $('code6').innerHTML =
+`const camera = new THREE.PerspectiveCamera(
+  ${f},             <span class="cmt">// fov: how wide the camera sees (degrees)</span>
+  width / height,  <span class="cmt">// aspect: the shape of the picture</span>
+  0.1,             <span class="cmt">// near: closer than this is not drawn</span>
+  200              <span class="cmt">// far: further than this is not drawn</span>
+);`;
+  })();
+  $('reset6').onclick = () => {
+    s.camera.position.set(...start);
+    s.controls.target.set(...target);
+    $('fov6').value = 50;
+    $('fov6').dispatchEvent(new Event('input'));
+  };
+}
+
+/* ---------- Lesson 7: solar system ---------- */
+{
+  const s = makeStage('stage7', [0, 5.5, 9]);
+  s.scene.add(new THREE.AmbientLight('#ffffff', 0.15));
+  const sunLight = new THREE.PointLight('#fff4d6', 3, 0, 0);
+  s.scene.add(sunLight);
+
+  // stars: 1500 random dots far away
+  const pts = new Float32Array(1500 * 3);
+  for (let i = 0; i < pts.length; i += 3) {
+    const v = new THREE.Vector3().randomDirection().multiplyScalar(40 + Math.random() * 20);
+    pts.set([v.x, v.y, v.z], i);
+  }
+  const starGeo = new THREE.BufferGeometry();
+  starGeo.setAttribute('position', new THREE.BufferAttribute(pts, 3));
+  s.scene.add(new THREE.Points(starGeo, new THREE.PointsMaterial({ color: '#ffffff', size: 0.15 })));
+
+  const sun = wgBox(2.2, 2.2, 2.2, { mark: true, kind: 'basic' }); // unlit (basic), so it glows like a sun
+  s.scene.add(sun);
+  const earthOrbit = new THREE.Group();
+  s.scene.add(earthOrbit);
+  const earth = wgBox(0.85, 0.85, 0.85, { mark: true, options: { roughness: 0.7 } }); // Earth is a Who's Good AU box
+  earth.position.x = 3.2;
+  earthOrbit.add(earth);
+  const moonOrbit = new THREE.Group();
+  earth.add(moonOrbit);
+  const moon = wgBox(0.25, 0.25, 0.25);
+  moon.position.x = 0.85;
+  moonOrbit.add(moon);
+
+  const ring = (r) => {
+    const pts = [];
+    for (let i = 0; i < 128; i++) { const a = (i / 128) * Math.PI * 2; pts.push(new THREE.Vector3(Math.cos(a) * r, 0, Math.sin(a) * r)); }
+    return new THREE.LineLoop(new THREE.BufferGeometry().setFromPoints(pts), new THREE.LineBasicMaterial({ color: '#44506a' }));
+  };
+  const orbits = [ring(3.2), ring(0.85)];
+  s.scene.add(orbits[0]);
+  moonOrbit.add(orbits[1]);
+  const helpers = [new THREE.AxesHelper(1.6), new THREE.AxesHelper(0.6)];
+  earthOrbit.add(helpers[0]);
+  moonOrbit.add(helpers[1]);
+
+  let speed = 1;
+  bindRange('spd7', (x) => { speed = x; })();
+  const showExtras = () => {
+    helpers.forEach((h) => { h.visible = $('axes7').checked; });
+    orbits.forEach((o) => { o.visible = $('orbit7').checked; });
+  };
+  ['axes7', 'orbit7'].forEach((id) => $(id).addEventListener('input', showExtras));
+  showExtras();
+  s.update = (dt) => {
+    sun.rotation.y += 0.2 * speed * dt;
+    earthOrbit.rotation.y += 0.3 * speed * dt;
+    moonOrbit.rotation.y += 2.0 * speed * dt;
+    earth.rotation.y += 1.5 * speed * dt;
+  };
+}
+
+/* ---------- one loop paints every visible scene ---------- */
+const clock = new THREE.Clock();
+function animate() {
+  const dt = Math.min(clock.getDelta(), 0.1);
+  for (const s of stages) {
+    if (!s.visible) continue;
+    s.update?.(dt);
+    s.controls.update();
+    if (s.running && !s.skip) { s.renderer.render(s.scene, s.camera); s.frames++; }
+  }
+  requestAnimationFrame(animate);
+}
+animate();
+
+/* ---------- quizzes ---------- */
+let score = 0;
+const done = new Set();
+document.querySelectorAll('.quiz').forEach((q, i) => {
+  const fb = q.querySelector('.fb');
+  q.querySelectorAll('button').forEach((b) => b.addEventListener('click', () => {
+    if (b.dataset.k === q.dataset.answer) {
+      b.classList.add('right');
+      fb.style.color = 'var(--good)';
+      fb.textContent = 'Yes, exactly right!';
+      if (!done.has(i)) { done.add(i); score++; $('score').textContent = score; $('progress').style.width = (score / 7 * 100) + '%'; }
+    } else {
+      b.classList.add('wrong');
+      fb.style.color = 'var(--bad)';
+      fb.textContent = 'Not quite. Read the lesson again and try another answer.';
+    }
+  }));
+});
+</script>
+</body>
+</html>
